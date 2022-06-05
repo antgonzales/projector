@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import Projector from ".";
 
 describe("<Projector />", () => {
-  describe("getTabProps()", () => {
+  describe("getTabControlsProps()", () => {
     it("provides an ARIA role", () => {
       const slides = [
         { img: "http://placekitten.com/200/200" },
@@ -13,10 +13,10 @@ describe("<Projector />", () => {
       ];
       render(
         <Projector>
-          {({ getTabProps }) => {
+          {({ getTabControlsProps }) => {
             return slides.map((slide, index) => (
               <button
-                {...getTabProps({
+                {...getTabControlsProps({
                   key: index + "-kitten-btn",
                 })}
               >
@@ -37,10 +37,10 @@ describe("<Projector />", () => {
       ];
       render(
         <Projector>
-          {({ getTabProps }) => {
+          {({ getTabControlsProps }) => {
             return slides.map((slide, index) => (
               <button
-                {...getTabProps({
+                {...getTabControlsProps({
                   index,
                   key: index + "-kitten-btn",
                 })}
@@ -56,7 +56,7 @@ describe("<Projector />", () => {
       );
     });
 
-    it("changes the active side index on click", () => {
+    it("changes the active slide index on click", () => {
       const slides = [
         { img: "http://placekitten.com/200/200" },
         { img: "http://placekitten.com/200/200" },
@@ -64,10 +64,10 @@ describe("<Projector />", () => {
       ];
       render(
         <Projector>
-          {({ getTabProps }) => {
+          {({ getTabControlsProps }) => {
             return slides.map((slide, index) => (
               <button
-                {...getTabProps({
+                {...getTabControlsProps({
                   index,
                   key: index + "-kitten-btn",
                 })}
@@ -82,9 +82,68 @@ describe("<Projector />", () => {
 
       fireEvent.click(nextSlide);
 
-      expect(screen.getByRole("tab", { selected: true }).textContent).toBe(
-        "Slide 1"
+      expect(
+        screen.getByRole("tab", { selected: true }).getAttribute("id")
+      ).toBe("projector-tab-1");
+    });
+
+    it("adds ARIA compliant controls", () => {
+      const slides = [
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+      ];
+      render(
+        <Projector>
+          {({ getTabControlsProps }) => {
+            return slides.map((slide, index) => (
+              <button
+                {...getTabControlsProps({
+                  index,
+                  key: index + "-kitten-btn",
+                })}
+              >
+                Slide {index}
+              </button>
+            ));
+          }}
+        </Projector>
       );
+      const tabs = screen.getAllByRole("tab");
+
+      tabs.forEach((tab, index) => {
+        expect(tab.getAttribute("aria-controls")).toBe("slide-" + index);
+      });
+    });
+
+    it("adds an ARIA compliant label", () => {
+      const slides = [
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+      ];
+      render(
+        <Projector>
+          {({ getTabControlsProps }) => {
+            return slides.map((slide, index) => (
+              <button
+                {...getTabControlsProps({
+                  index,
+                  key: index + "-kitten-btn",
+                })}
+              >
+                Slide {index}
+              </button>
+            ));
+          }}
+        </Projector>
+      );
+
+      const tabs = screen.getAllByRole("tab");
+
+      tabs.forEach((tab, index) => {
+        expect(tab.getAttribute("aria-label")).toBe("Slide " + (index + 1));
+      });
     });
   });
 
@@ -110,6 +169,65 @@ describe("<Projector />", () => {
         </Projector>
       );
       expect(screen.getAllByRole("tabpanel").length).toBe(slides.length);
+    });
+
+    it("adds ARIA compliant label", () => {
+      const slides = [
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+      ];
+      render(
+        <Projector>
+          {({ getSlideProps }) => {
+            return slides.map((slide, index) => (
+              <img
+                {...getSlideProps({
+                  index,
+                  key: index + "-kitten-img",
+                  src: slide.img,
+                  total: slides.length,
+                })}
+              />
+            ));
+          }}
+        </Projector>
+      );
+      const slidePanels = screen.getAllByRole("tabpanel");
+
+      slidePanels.forEach((slide, index) => {
+        expect(slide.getAttribute("aria-label")).toBe(
+          `${index + 1} of ${slides.length}`
+        );
+      });
+    });
+
+    it("adds id for controls", () => {
+      const slides = [
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+        { img: "http://placekitten.com/200/200" },
+      ];
+      render(
+        <Projector>
+          {({ getSlideProps }) => {
+            return slides.map((slide, index) => (
+              <img
+                {...getSlideProps({
+                  index,
+                  key: index + "-kitten-img",
+                  src: slide.img,
+                })}
+              />
+            ));
+          }}
+        </Projector>
+      );
+      const slidePanels = screen.getAllByRole("tabpanel");
+
+      slidePanels.forEach((slide, index) => {
+        expect(slide.getAttribute("id")).toBe("slide-" + index);
+      });
     });
   });
 });

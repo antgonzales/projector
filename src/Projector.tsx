@@ -2,18 +2,28 @@ import React from "react";
 
 export default function Projector({ children }) {
   const [activeSlideIndex, setActiveSlideIndex] = React.useState(0);
-  const getTabProps = ({ index, ...rest }) => {
+  const getTabControlsProps = ({ index, ...rest }) => {
+    const position = index + 1;
     return {
-      role: "tab",
+      "aria-controls": "slide-" + index,
+      "aria-label": "Slide " + position,
       "aria-selected": activeSlideIndex === index,
+      role: "tab",
+      id: "projector-tab-" + index,
       onClick: () => {
         setActiveSlideIndex(index);
       },
       ...rest,
     };
   };
-  const getSlideProps = ({ ...rest }) => {
-    return { role: "tabpanel", "aria-roledescription": "slide", ...rest };
+  const getSlideProps = ({ index, total, ...rest }) => {
+    return {
+      role: "tabpanel",
+      "aria-roledescription": "slide",
+      "aria-label": `${index + 1} of ${total}`,
+      id: "slide-" + index,
+      ...rest,
+    };
   };
-  return children({ getSlideProps, getTabProps });
+  return children({ getSlideProps, getTabControlsProps });
 }
